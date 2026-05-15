@@ -679,20 +679,34 @@ export default function App() {
                                       const remOther = remainingCredits - 9;
                                       const neededOther = neededPoints - (9 * 4.0);
                                       
-                                      // Solve: 4*A + 3*(rem - A) = needed
+                                      // Calculate A and B distribution
+                                      // 4a + 3b = neededOther, a + b = courses
+                                      // This is complex because credits vary, so we use credits but explain as 'courses'
                                       let tínA = Math.ceil(neededOther - (3 * remOther));
                                       tínA = Math.max(0, tínA);
                                       const tínB = Math.max(0, remOther - tínA);
 
+                                      // Convert to approx 3-credit courses for intuition
+                                      const coursesA = Math.ceil(tínA / 3);
+                                      const coursesB = Math.floor(tínB / 3);
+
                                       return (
-                                        <div className="grid grid-cols-2 gap-4">
-                                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1 italic">Môn đạt A</p>
-                                            <p className="text-xl font-black text-slate-900 italic">~{tínA}<span className="text-[10px] ml-1 font-bold text-slate-500 uppercase">Tín</span></p>
+                                        <div className="space-y-4">
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                              <p className="text-[9px] font-bold text-slate-400 uppercase mb-1 italic">Môn đạt A (4.0)</p>
+                                              <p className="text-xl font-black text-slate-900 italic">~{coursesA}<span className="text-[10px] ml-1 font-bold text-slate-500 uppercase">Môn</span></p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                              <p className="text-[9px] font-bold text-slate-400 uppercase mb-1 italic">Môn đạt B (3.0)</p>
+                                              <p className="text-xl font-black text-slate-600 italic">~{coursesB}<span className="text-[10px] ml-1 font-bold text-slate-500 uppercase">Môn</span></p>
+                                            </div>
                                           </div>
-                                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1 italic">Cho phép B</p>
-                                            <p className="text-xl font-black text-slate-600 italic">~{tínB}<span className="text-[10px] ml-1 font-bold text-slate-500 uppercase">Tín</span></p>
+                                          <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-100/50">
+                                            <p className="text-[10px] font-black text-amber-700 uppercase italic mb-1">Lời khuyên chiến thuật:</p>
+                                            <p className="text-[11px] font-medium text-slate-600 leading-relaxed italic">
+                                              Cố gắng đạt tối đa điểm A cho các môn 3 tín chỉ. Nếu có môn bị điểm C (2.0), bạn sẽ cần bù lại bằng ít nhất 2 môn điểm A khác để giữ vững mức trung bình 3.60.
+                                            </p>
                                           </div>
                                         </div>
                                       );
