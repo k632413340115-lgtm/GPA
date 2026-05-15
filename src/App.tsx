@@ -16,7 +16,9 @@ import {
   ShieldCheck,
   Award,
   Zap,
-  TrendingUp
+  TrendingUp,
+  Pencil,
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -56,6 +58,8 @@ export default function App() {
   
   const [currentSemester, setCurrentSemester] = useState(1);
   const [filterSemester, setFilterSemester] = useState<number | 'all'>('all');
+  const [targetGpa, setTargetGpa] = useState(3.60);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     const savedCourses = localStorage.getItem(STORAGE_KEY);
@@ -81,18 +85,49 @@ export default function App() {
     if (!newCourse.name.trim()) return;
     
     const { letter, gpa } = getLetterAnd4Point(newCourse.grade10);
-    const course = {
-      id: crypto.randomUUID(),
-      code: newCourse.code,
-      name: newCourse.name,
-      credits: Number(newCourse.credits),
-      grade10: Number(newCourse.grade10),
-      letterGrade: letter,
-      grade4: gpa,
-      semester: currentSemester
-    };
+    
+    if (editingId) {
+      setCourses(courses.map(c => c.id === editingId ? {
+        ...c,
+        code: newCourse.code,
+        name: newCourse.name,
+        credits: Number(newCourse.credits),
+        grade10: Number(newCourse.grade10),
+        letterGrade: letter,
+        grade4: gpa,
+        semester: currentSemester
+      } : c));
+      setEditingId(null);
+    } else {
+      const course = {
+        id: crypto.randomUUID(),
+        code: newCourse.code,
+        name: newCourse.name,
+        credits: Number(newCourse.credits),
+        grade10: Number(newCourse.grade10),
+        letterGrade: letter,
+        grade4: gpa,
+        semester: currentSemester
+      };
+      setCourses([...courses, course as any]);
+    }
+    setNewCourse({ ...newCourse, code: "", name: "" });
+  };
 
-    setCourses([...courses, course as any]);
+  const editCourse = (course: Course) => {
+    setEditingId(course.id);
+    setNewCourse({
+      code: course.code,
+      name: course.name,
+      credits: course.credits,
+      grade10: course.grade10
+    });
+    setCurrentSemester((course as any).semester);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
     setNewCourse({ ...newCourse, code: "", name: "" });
   };
 
@@ -327,7 +362,18 @@ export default function App() {
                             onChange={(e) => setNewCourse({...newCourse, grade10: Number(e.target.value)})}
                             className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-maroon/5 focus:border-maroon outline-none transition-all font-bold text-slate-700 font-mono text-sm"
                           />
-                          <button type="submit" className="bg-maroon hover:bg-maroon-dark text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all shadow-lg shadow-maroon/20 active:scale-95 flex-shrink-0">Thêm</button>
+                          <button type="submit" className="bg-maroon hover:bg-maroon-dark text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all shadow-lg shadow-maroon/20 active:scale-95 flex-shrink-0">
+                            {editingId ? "Cập nhật" : "Thêm"}
+                          </button>
+                          {editingId && (
+                            <button 
+                              type="button"
+                              onClick={cancelEdit}
+                              className="bg-slate-200 hover:bg-slate-300 text-slate-600 px-4 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all active:scale-95 flex-shrink-0"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </form>
@@ -384,8 +430,9 @@ export default function App() {
                                 {course.letterGrade}
                               </span>
                             </td>
-                            <td className="px-6 py-5 text-right print:hidden">
-                              <button onClick={() => removeCourse(course.id)} className="p-2 text-slate-200 hover:text-red-500 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            <td className="px-6 py-5 text-right print:hidden flex items-center justify-end gap-2 text-slate-200">
+                              <button onClick={() => editCourse(course)} className="p-2 hover:text-blue-500 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                              <button onClick={() => removeCourse(course.id)} className="p-2 hover:text-red-500 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </td>
                           </motion.tr>
                         ))}
@@ -603,9 +650,23 @@ export default function App() {
                         <div className="p-2 bg-white rounded-lg shadow-sm border border-slate-200">
                           <TrendingUp className="w-4 h-4 text-maroon" />
                         </div>
-                        <h2 className="text-xs font-black text-slate-700 uppercase tracking-widest">Phân tích mục tiêu Xuất sắc (3.60)</h2>
+                        <h2 className="text-xs font-black text-slate-700 uppercase tracking-widest">Phân tích mục tiêu {targetGpa.toFixed(2)}</h2>
                       </div>
                       <div className="flex items-center gap-2">
+                        <div className="flex bg-white p-1 rounded-lg border border-slate-200 gap-1 mr-4">
+                          {[3.20, 3.60].map((val) => (
+                            <button
+                              key={val}
+                              onClick={() => setTargetGpa(val)}
+                              className={cn(
+                                "px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all",
+                                targetGpa === val ? "bg-maroon text-white shadow-sm" : "text-slate-400 hover:bg-slate-50"
+                              )}
+                            >
+                              {val === 3.2 ? "Giỏi" : "X.Sắc"}
+                            </button>
+                          ))}
+                        </div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase italic">Mục tiêu chuẩn: 130 Tín chỉ</span>
                       </div>
                     </div>
@@ -616,12 +677,12 @@ export default function App() {
                       const currentGpa4 = stats.cumulative.gpa4;
                       const remainingCredits = Math.max(0, totalTarget - currentCredits);
                       
-                      const targetTotalPoints = totalTarget * 3.6;
+                      const targetTotalPoints = totalTarget * targetGpa;
                       const currentTotalPoints = currentCredits * currentGpa4;
                       const neededPoints = Math.max(0, targetTotalPoints - currentTotalPoints);
                       const avgNeededRemaining = remainingCredits > 0 ? (neededPoints / remainingCredits) : 0;
                       
-                      const gpaGap = Math.max(0, 3.6 - currentGpa4).toFixed(2);
+                      const gpaGap = Math.max(0, targetGpa - currentGpa4).toFixed(2);
                       const isPossible = avgNeededRemaining <= 4.0;
 
                       return (
@@ -629,7 +690,7 @@ export default function App() {
                           {/* Left: Metric Cloud */}
                           <div className="lg:col-span-5 space-y-6">
                             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-                               <p className="text-[10px] text-slate-400 font-bold uppercase mb-2 italic">Khoảng cách tới 3.60</p>
+                               <p className="text-[10px] text-slate-400 font-bold uppercase mb-2 italic">Khoảng cách tới {targetGpa.toFixed(2)}</p>
                                <div className="flex items-baseline gap-2">
                                  <span className="text-4xl font-black text-maroon italic">-{gpaGap}</span>
                                  <span className="text-xs font-bold text-slate-400 uppercase italic">GPA Points</span>
@@ -637,7 +698,7 @@ export default function App() {
                                <div className="mt-4 w-full h-1 bg-slate-100 rounded-full overflow-hidden">
                                   <motion.div 
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${(currentGpa4 / 3.6) * 100}%` }}
+                                    animate={{ width: `${Math.min(100, (currentGpa4 / targetGpa) * 100)}%` }}
                                     className="h-full bg-maroon"
                                   />
                                </div>
@@ -657,7 +718,7 @@ export default function App() {
                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 italic leading-relaxed">
                                  {isPossible 
                                    ? "Mục tiêu nằm trong tầm tay nếu nỗ lực tối đa." 
-                                   : "Mục tiêu 3.60 hiện tại nằm ngoài khả năng thực tế."}
+                                   : `Mục tiêu ${targetGpa.toFixed(2)} hiện tại nằm ngoài khả năng thực tế.`}
                                </p>
                             </div>
                           </div>
@@ -705,7 +766,7 @@ export default function App() {
                                           <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-100/50">
                                             <p className="text-[10px] font-black text-amber-700 uppercase italic mb-1">Lời khuyên chiến thuật:</p>
                                             <p className="text-[11px] font-medium text-slate-600 leading-relaxed italic">
-                                              Cố gắng đạt tối đa điểm A cho các môn 3 tín chỉ. Nếu có môn bị điểm C (2.0), bạn sẽ cần bù lại bằng ít nhất 2 môn điểm A khác để giữ vững mức trung bình 3.60.
+                                              Cố gắng đạt tối đa điểm A cho các môn 3 tín chỉ. Nếu có môn bị điểm C (2.0), bạn sẽ cần bù lại bằng ít nhất 2 môn điểm A khác để giữ vững mức trung bình {targetGpa.toFixed(2)}.
                                             </p>
                                           </div>
                                         </div>
