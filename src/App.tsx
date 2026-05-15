@@ -603,85 +603,119 @@ export default function App() {
                         <div className="p-2 bg-white rounded-lg shadow-sm border border-slate-200">
                           <TrendingUp className="w-4 h-4 text-maroon" />
                         </div>
-                        <h3 className="text-xs font-bold text-slate-700 uppercase tracking-widest">Phân tích lộ trình Xuất sắc (3.6)</h3>
+                        <h2 className="text-xs font-black text-slate-700 uppercase tracking-widest">Phân tích mục tiêu Xuất sắc (3.60)</h2>
                       </div>
-                      <span className="text-[10px] bg-maroon/10 text-maroon px-2 py-1 rounded font-bold uppercase italic">Khóa luận: 9 Tín</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase italic">Mục tiêu chuẩn: 130 Tín chỉ</span>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-4">
-                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Kịch bản đạt 3.60:</p>
-                        {(() => {
-                          const totalTarget = 130;
-                          const currentCredits = stats.cumulative.totalCredits;
-                          const currentGpa = stats.cumulative.gpa4;
-                          const remainingCredits = Math.max(0, totalTarget - currentCredits);
-                          const remainingThesis = 9;
-                          const remainingOther = Math.max(0, remainingCredits - remainingThesis);
-                          
-                          if (remainingCredits === 0) return <p className="text-xs italic text-slate-400">Bạn đã hoàn thành đủ tín chỉ.</p>;
-                          
-                          const targetTotalPoints = totalTarget * 3.6;
-                          const currentTotalPoints = currentCredits * currentGpa;
-                          const neededPoints = targetTotalPoints - currentTotalPoints;
-                          
-                          // Simulation: If thesis is A (4.0)
-                          const thesisA = 9 * 4.0;
-                          const neededAfterThesisA = neededPoints - thesisA;
-                          const avgNeededOther = neededAfterThesisA / remainingOther;
-                          
-                          // Case where impossible even with all A
-                          if (avgNeededOther > 4.0) {
-                            return <div className="p-4 bg-red-50 rounded-xl border border-red-100"><p className="text-xs font-bold text-red-600 italic">Mục tiêu 3.6 (Xuất sắc) hiện tại rất khó đạt được. Hãy tập trung giữ vững mức Giỏi.</p></div>;
-                          }
+                    {(() => {
+                      const totalTarget = 130;
+                      const currentCredits = stats.cumulative.totalCredits;
+                      const currentGpa4 = stats.cumulative.gpa4;
+                      const remainingCredits = Math.max(0, totalTarget - currentCredits);
+                      
+                      const targetTotalPoints = totalTarget * 3.6;
+                      const currentTotalPoints = currentCredits * currentGpa4;
+                      const neededPoints = Math.max(0, targetTotalPoints - currentTotalPoints);
+                      const avgNeededRemaining = remainingCredits > 0 ? (neededPoints / remainingCredits) : 0;
+                      
+                      const gpaGap = Math.max(0, 3.6 - currentGpa4).toFixed(2);
+                      const isPossible = avgNeededRemaining <= 4.0;
 
-                          // Calculate mix of A and B
-                          // A*x + B*(rem - x) = neededAfterThesisA
-                          // 4x + 3(rem - x) = needed
-                          // 4x + 3rem - 3x = needed
-                          // x = needed - 3rem
-                          let numA = Math.ceil(neededAfterThesisA - (3 * remainingOther));
-                          numA = Math.max(0, numA);
-                          const numB = Math.max(0, Math.ceil(remainingOther - numA));
-
-                          return (
-                            <div className="space-y-4">
-                              <div className="bg-white p-4 rounded-xl border border-slate-200">
-                                <p className="text-[10px] text-slate-400 font-bold mb-2 uppercase italic tracking-wide">Nếu Khóa luận đạt A (4.0):</p>
-                                <ul className="space-y-2">
-                                  <li className="flex justify-between text-sm italic">
-                                    <span className="text-slate-600">Cần thêm các học phần A:</span>
-                                    <span className="font-bold text-slate-900">~{numA} tín chỉ</span>
-                                  </li>
-                                  <li className="flex justify-between text-sm italic">
-                                    <span className="text-slate-600">Có thể chấp nhận B tối đa:</span>
-                                    <span className="font-bold text-slate-500">~{numB} tín chỉ</span>
-                                  </li>
-                                </ul>
-                              </div>
+                      return (
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                          {/* Left: Metric Cloud */}
+                          <div className="lg:col-span-5 space-y-6">
+                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                               <p className="text-[10px] text-slate-400 font-bold uppercase mb-2 italic">Khoảng cách tới 3.60</p>
+                               <div className="flex items-baseline gap-2">
+                                 <span className="text-4xl font-black text-maroon italic">-{gpaGap}</span>
+                                 <span className="text-xs font-bold text-slate-400 uppercase italic">GPA Points</span>
+                               </div>
+                               <div className="mt-4 w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                                  <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(currentGpa4 / 3.6) * 100}%` }}
+                                    className="h-full bg-maroon"
+                                  />
+                               </div>
                             </div>
-                          );
-                        })()}
-                      </div>
 
-                      <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col justify-center">
-                        <p className="text-[10px] text-slate-400 font-bold mb-4 uppercase text-center italic">Chiến lược đề xuất</p>
-                        <div className="flex justify-center gap-4">
-                           <div className="text-center">
-                             <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-2 mx-auto">
-                               <TrendingUp className="w-5 h-5 text-blue-600" />
-                             </div>
-                             <p className="text-[9px] font-bold text-slate-500 uppercase italic">Ưu tiên<br/>Môn 3 TC</p>
-                           </div>
-                           <div className="text-center">
-                             <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mb-2 mx-auto">
-                               <Award className="w-5 h-5 text-amber-600" />
-                             </div>
-                             <p className="text-[9px] font-bold text-slate-500 uppercase italic">Khóa luận<br/>Phải đạt A</p>
-                           </div>
+                            <div className={cn(
+                              "p-6 rounded-2xl border shadow-sm",
+                              isPossible ? "bg-white border-slate-200" : "bg-red-50 border-red-100"
+                            )}>
+                               <p className="text-[10px] text-slate-400 font-bold uppercase mb-2 italic">GPA cần đạt (TB cho {remainingCredits} tín còn lại)</p>
+                               <h4 className={cn(
+                                 "text-4xl font-black italic",
+                                 isPossible ? "text-slate-900" : "text-red-600"
+                               )}>
+                                 {avgNeededRemaining > 4.0 ? "> 4.0" : avgNeededRemaining.toFixed(2)}
+                               </h4>
+                               <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 italic leading-relaxed">
+                                 {isPossible 
+                                   ? "Mục tiêu nằm trong tầm tay nếu nỗ lực tối đa." 
+                                   : "Mục tiêu 3.60 hiện tại nằm ngoài khả năng thực tế."}
+                               </p>
+                            </div>
+                          </div>
+
+                          {/* Right: Path Breakdown */}
+                          <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
+                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-1">
+                              <p className="text-[11px] font-bold text-slate-900 uppercase tracking-wide mb-4 border-b border-slate-50 pb-2">Kịch bản chi tiết:</p>
+                              {isPossible && remainingCredits > 0 ? (
+                                <div className="space-y-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 font-black text-xs">A</div>
+                                    <p className="text-[11px] font-bold text-slate-500 uppercase leading-none italic">Khóa luận (9 tín) cần đạt: <span className="text-slate-900 ml-1">Loại A (4.0)</span></p>
+                                  </div>
+                                  <div className="h-px bg-slate-50"></div>
+                                  <div className="space-y-3">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase italic">Số tín chỉ còn lại ({remainingCredits - 9} tín):</p>
+                                    {(() => {
+                                      const remOther = remainingCredits - 9;
+                                      const neededOther = neededPoints - (9 * 4.0);
+                                      
+                                      // Solve: 4*A + 3*(rem - A) = needed
+                                      let tínA = Math.ceil(neededOther - (3 * remOther));
+                                      tínA = Math.max(0, tínA);
+                                      const tínB = Math.max(0, remOther - tínA);
+
+                                      return (
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1 italic">Môn đạt A</p>
+                                            <p className="text-xl font-black text-slate-900 italic">~{tínA}<span className="text-[10px] ml-1 font-bold text-slate-500 uppercase">Tín</span></p>
+                                          </div>
+                                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1 italic">Cho phép B</p>
+                                            <p className="text-xl font-black text-slate-600 italic">~{tínB}<span className="text-[10px] ml-1 font-bold text-slate-500 uppercase">Tín</span></p>
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center justify-center h-full gap-4 text-center py-4">
+                                   <div className="p-3 bg-red-50 rounded-full"><Info className="w-6 h-6 text-red-400" /></div>
+                                   <p className="text-xs font-bold text-slate-500 uppercase italic leading-loose">Bạn cần chuyển hướng mục tiêu sang bằng GIỎI (3.20 - 3.59) để có lộ trình học tập cân bằng hơn.</p>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="p-4 bg-maroon/5 rounded-xl border border-maroon/10">
+                               <p className="text-[9px] font-bold text-maroon uppercase italic tracking-tight text-center">
+                                 "Thành công không phải là kết quả cuối cùng, mà là nỗ lực không ngừng nghỉ."
+                               </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </section>
                 </div>
 
